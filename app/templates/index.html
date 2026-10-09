@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault Security Dashboard</title>
+  <style>
+    :root {
+      --navy: #101a31;
+      --blue: #4169e1;
+      --purple: #7955e8;
+      --bg: #f5f7fc;
+      --text: #17233e;
+      --muted: #71809d;
+      --border: #e5eaf4;
+      --green: #14976b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 245px;
+      background: var(--navy);
+      color: white;
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 17px;
+      font-weight: 750;
+      margin: 0 8px 48px;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #648bff, #8054e8);
+      font-size: 22px;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 5px;
+      font-weight: 400;
+      color: #aab7d2;
+      font-size: 12px;
+    }
+
+    .nav-label {
+      margin: 0 10px 12px;
+      color: #8493b2;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      padding: 14px 13px;
+      margin-bottom: 7px;
+      border-radius: 10px;
+      color: #c3cde0;
+      font-size: 14px;
+      
+      text-decoration: none;
+      display: block;
+
+
+    }
+.nav-item, .nav-item:hover, .nav-item:visited, .nav-item:focus { text-decoration: none; }
+    .nav-item.active {
+      color: white;
+      background: linear-gradient(100deg, #3456a9, #293e77);
+    }
+
+    .nav-item span { margin-right: 10px; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px 8px 0;
+      border-top: 1px solid #2d3a54;
+      color: #aab7d2;
+      font-size: 12px;
+      line-height: 1.9;
+    }
+
+    main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 76px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+    }
+
+    .topbar small { color: var(--muted); }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: #243e7c;
+    }
+
+    .content {
+      max-width: 1500px;
+      padding: 34px 36px;
+      margin: auto;
+    }
+
+    .heading {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .shield {
+      width: 62px;
+      height: 62px;
+      border-radius: 19px;
+      display: grid;
+      place-items: center;
+      font-size: 32px;
+      color: white;
+      background: linear-gradient(135deg, #557ef4, #8052e9);
+      box-shadow: 0 9px 24px #647cf333;
+    }
+
+    h1 {
+      margin: 0 0 7px;
+      font-size: clamp(23px, 3vw, 32px);
+      letter-spacing: -1px;
+    }
+
+    .subtitle { color: var(--muted); font-size: 14px; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .status-card, .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: 0 4px 18px #1a2d4d05;
+    }
+
+    .status-card {
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-width: 0;
+    }
+
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .vault-icon { background: #159b75; }
+    .db-icon { background: #376be0; }
+    .app-icon { background: #7954e8; }
+
+    .service-name { font-weight: 750; font-size: 14px; }
+    .service-caption { color: var(--muted); font-size: 12px; margin-top: 5px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      border-radius: 20px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64718a;
+      background: #eef1f7;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ba8bc;
+    }
+
+    .pill.online { color: #087c56; background: #e4f7ef; }
+    .pill.online .dot { background: #13a675; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr);
+      gap: 20px;
+    }
+
+    .panel { padding: 25px; min-width: 0; }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: 17px;
+      letter-spacing: -.3px;
+    }
+
+    .description {
+      font-size: 14px;
+      line-height: 1.9;
+      color: #52627f;
+      margin: 0 0 22px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 10px;
+      gap: 10px;
+    }
+
+    .feature { text-align: center; }
+    .feature-icon { font-size: 25px; margin-bottom: 10px; }
+    .feature strong { display: block; font-size: 12px; }
+    .feature small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .workflow {
+      background: #f0f5ff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .workflow h3 {
+      font-size: 14px;
+      color: #315dce;
+      margin: 0 0 15px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 12px 0;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #52627f;
+    }
+
+    .step-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: white;
+      background: #4169e1;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .endpoint {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 17px;
+      margin-bottom: 14px;
+    }
+
+    .endpoint-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 750;
+      font-size: 13px;
+    }
+
+    .endpoint-title span {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #edf2ff;
+      font-size: 17px;
+    }
+
+    .method {
+      display: inline-block;
+      background: #eef2f8;
+      color: #4b5d7b;
+      border-radius: 5px;
+      padding: 4px 7px;
+      font-size: 10px;
+      margin: 12px 0 7px;
+      font-family: Consolas, monospace;
+    }
+
+    .endpoint p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      margin: 0 0 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: var(--navy);
+      color: white;
+      font-size: 12px;
+      font-weight: 650;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform .15s, background .15s;
+    }
+
+    button:hover { background: #2c447e; transform: translateY(-1px); }
+
+    .endpoint button { width: 100%; }
+
+    #test-result {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #52627f;
+      margin-top: 12px;
+    }
+
+    .global-status {
+      padding: 18px;
+      border-radius: 12px;
+      background: #f4f6fa;
+      margin-top: 20px;
+    }
+
+    .global-status strong { font-size: 13px; }
+    .global-status p { font-size: 12px; line-height: 1.7; color: var(--muted); }
+
+    @media (max-width: 1050px) {
+      .sidebar { width: 205px; }
+      .content { padding: 25px 20px; }
+      .topbar { padding: 0 20px; }
+      .status-grid { grid-template-columns: 1fr; }
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .sidebar { display: none; }
+      .topbar { height: 62px; }
+      .content { padding: 24px 15px; }
+      .heading { align-items: flex-start; gap: 12px; }
+      .shield { width: 48px; height: 48px; font-size: 25px; }
+      .features { grid-template-columns: repeat(2, 1fr); row-gap: 24px; }
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">⬡</div>
+        <div>Vault Secrets<small>Management Platform</small></div>
+      </div>
+
+      <div class="nav-label">Workspace</div>
+      
+<a class="nav-item active" href="/">
+  <span>▦</span> Dashboard
+</a>
+
+<a class="nav-item" href="/database">
+  <span>▤</span> Database check
+</a>
+
+<a class="nav-item" href="/secrets">
+  <span>♙</span> Secrets management
+</a>
+
+<a class="nav-item" href="/logs">
+  <span>▧</span> Application logs
+</a>
+
+
+      <div class="sidebar-footer">
+        <strong>SECURITY LAB</strong><br>
+        Vault · Docker · PostgreSQL<br>
+        <span>Local learning environment</span>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <small>Workspace / Dashboard</small>
+        <div class="profile">
+          <div class="avatar">V</div>
+          Vault App
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="heading">
+          <div class="shield">⬡</div>
+          <div>
+            <h1>Vault Secrets Management</h1>
+            <div class="subtitle">Sécurisez vos secrets. Connectez vos services.</div>
+          </div>
+        </div>
+
+        <section class="status-grid">
+          <article class="status-card">
+            <div class="service-icon vault-icon">V</div>
+            <div>
+              <div class="service-name">HashiCorp Vault</div>
+              <div class="service-caption">Gestionnaire de secrets</div>
+              <div class="pill online"><span class="dot"></span> Configuré</div>
+            </div>
+          </article>
+
+          <article class="status-card">
+            <div class="service-icon db-icon">▤</div>
+            <div>
+              <div class="service-name">PostgreSQL</div>
+              <div class="service-caption">Base de données</div>
+              <div class="pill"><span class="dot"></span> À vérifier</div>
+            </div>
+          </article>
+
+          <article class="status-card">
+            <div class="service-icon app-icon">{ }</div>
+            <div>
+              <div class="service-name">Flask API</div>
+              <div class="service-caption">Application backend</div>
+              <div class="pill online"><span class="dot"></span> Disponible</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="main-grid">
+          <article class="panel">
+            <h2>✧ &nbsp; Vue d'ensemble</h2>
+            <p class="description">
+              Cette application démontre comment HashiCorp Vault gère
+              les secrets d'une application Flask connectée à PostgreSQL.
+              Les identifiants sont récupérés depuis Vault au moment du test,
+              plutôt que d'être codés en dur dans le code Python.
+            </p>
+
+            <div class="features">
+              <div class="feature">
+                <div class="feature-icon">🛡️</div>
+                <strong>Secrets</strong>
+                <small>Centralisés dans Vault</small>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">🐳</div>
+                <strong>Docker</strong>
+                <small>Services isolés</small>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">🔐</div>
+                <strong>AppRole</strong>
+                <small>Authentification</small>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <strong>API</strong>
+                <small>Vérification rapide</small>
+              </div>
+            </div>
+
+            <div class="workflow">
+              <h3>Comment fonctionne le système ?</h3>
+              <div class="step"><span class="step-number">1</span><span>Flask s'authentifie auprès de Vault via AppRole.</span></div>
+              <div class="step"><span class="step-number">2</span><span>Vault fournit le secret de connexion autorisé.</span></div>
+              <div class="step"><span class="step-number">3</span><span>Flask teste la connexion à PostgreSQL.</span></div>
+              <div class="step"><span class="step-number">4</span><span>Le dashboard affiche le résultat du test.</span></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>↗ &nbsp; Tests de connexion</h2>
+
+            <div class="endpoint">
+              <div class="endpoint-title"><span>⌂</span> Santé de l'application</div>
+              <div class="method">GET &nbsp; /</div>
+              <p>Vérifie que l'interface et l'API sont accessibles.</p>
+              <button onclick="testEndpoint('/')">Tester l'application ↗</button>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-title"><span>▤</span> Connexion à la base</div>
+              <div class="method">GET &nbsp; /db-check</div>
+              <p>Teste l'authentification Vault et la connexion PostgreSQL.</p>
+              <button onclick="testEndpoint('/db-check')">Tester la connexion ↗</button>
+            </div>
+
+            <div id="test-result" aria-live="polite">Les résultats de vos tests apparaîtront ici.</div>
+
+            <div class="global-status">
+              <strong>◉ &nbsp; État de l'environnement</strong>
+              <p>Laboratoire local destiné à l'apprentissage de la gestion des secrets.</p>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    
+async function testEndpoint(path) {
+  const result = document.getElementById("test-result");
+  result.textContent = "Test en cours…";
+
+  try {
+    const response = await fetch(path);
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    if (path === "/") {
+      result.textContent =
+        "✓ Application accessible\n" +
+        "Le dashboard Flask répond correctement.";
+      return;
+    }
+
+    const data = await response.json();
+
+    result.textContent =
+      data.status === "success"
+        ? "✓ Connexion réussie\n" + JSON.stringify(data, null, 2)
+        : "Échec du test\n" + JSON.stringify(data, null, 2);
+
+  } catch (error) {
+    console.error("Erreur du test :", error);
+    result.textContent =
+      "Échec du test : " + error.message;
+  }
+}
+  </script>
+</body>
+</html>

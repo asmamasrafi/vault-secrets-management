@@ -1,0 +1,5 @@
+
+Flask
+hvac
+psycopg2-binary
+python-dotenv

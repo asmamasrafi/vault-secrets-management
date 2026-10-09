@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Logs | Vault Security</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fc;
+      color: #17233e;
+    }
+
+    a {
+      color: #4169e1;
+      text-decoration: none;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #71809d;
+      margin-bottom: 28px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5eaf4;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 5px 20px #1a2d4d08;
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: #edf2ff;
+      font-size: 23px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.8;
+      color: #71809d;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 20px;
+      background: #e4f7ef;
+      color: #087c56;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .terminal {
+      max-width: 1000px;
+      margin-top: 22px;
+      padding: 22px;
+      border-radius: 14px;
+      background: #17233e;
+      color: #dce6ff;
+    }
+
+    .terminal h2 {
+      color: white;
+    }
+
+    .terminal p {
+      color: #b8c5df;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: 15px;
+      border-radius: 8px;
+      background: #0d172b;
+      color: #8ee6bd;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .notice {
+      max-width: 1000px;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid #f2dfad;
+      background: #fff9e9;
+      border-radius: 12px;
+      color: #80621d;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 20px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="back" href="/">← Retour au dashboard</a>
+
+  <h1>Application Logs</h1>
+  <p class="subtitle">
+    Surveillance de l’application Flask et diagnostic des erreurs.
+  </p>
+
+  <section class="grid">
+    <article class="card">
+      <div class="icon">📋</div>
+      <h2>Logs de l’application</h2>
+      <p>
+        Les journaux Flask permettent d’identifier les erreurs
+        et de comprendre le comportement de l’application.
+      </p>
+      <span class="tag">Flask · Python</span>
+    </article>
+
+    <article class="card">
+      <div class="icon">🔐</div>
+      <h2>Authentification Vault</h2>
+      <p>
+        En cas d’échec de connexion à Vault, les journaux du conteneur
+        peuvent aider à diagnostiquer le problème sans afficher les secrets.
+      </p>
+      <span class="tag">AppRole</span>
+    </article>
+
+    <article class="card">
+      <div class="icon">🗄️</div>
+      <h2>Connexion PostgreSQL</h2>
+      <p>
+        Les erreurs de connexion à la base de données peuvent être
+        examinées dans les journaux pour faciliter le dépannage.
+      </p>
+      <span class="tag">PostgreSQL</span>
+    </article>
+
+    <article class="card">
+      <div class="icon">🛡️</div>
+      <h2>Bonnes pratiques</h2>
+      <p>
+        Les mots de passe, tokens, identifiants Vault et autres données
+        sensibles ne doivent jamais être écrits dans les journaux.
+      </p>
+      <span class="tag">Security best practices</span>
+    </article>
+  </section>
+
+  <section class="terminal">
+    <h2>Consulter les journaux</h2>
+    <p>
+      Exécute cette commande dans PowerShell, depuis le dossier
+      du projet, pour consulter les dernières lignes des logs Flask :
+    </p>
+
+    <pre>docker compose logs --tail=50 app</pre>
+
+    <p>
+      Pour suivre les nouveaux événements en temps réel :
+    </p>
+
+    <pre>docker compose logs -f app</pre>
+  </section>
+
+  <div class="notice">
+    <strong>⚠️ Conseil de sécurité</strong><br>
+    Cette page explique comment consulter les logs, mais ne les expose
+    pas directement dans le navigateur. Cela évite de rendre des
+    informations internes accessibles aux visiteurs de l’application.
+  </div>
+</body>
+</html>
+

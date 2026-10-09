@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Check | Vault Security</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fc;
+      color: #17233e;
+    }
+    a { color: #4169e1; text-decoration: none; }
+    .back { display: inline-block; margin-bottom: 25px; font-size: 14px; }
+    .header { margin-bottom: 28px; }
+    .header h1 { margin: 0 0 8px; font-size: 30px; }
+    .header p { color: #71809d; }
+    .card {
+      max-width: 850px;
+      padding: 28px;
+      background: white;
+      border: 1px solid #e5eaf4;
+      border-radius: 16px;
+      box-shadow: 0 5px 20px #1a2d4d08;
+      margin-bottom: 20px;
+    }
+    .status {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: #e4f7ef;
+      color: #087c56;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    button {
+      border: 0;
+      border-radius: 9px;
+      background: #101a31;
+      color: white;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #result {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #52627f;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-top: 18px;
+    }
+    .muted { color: #71809d; line-height: 1.7; }
+    @media (max-width: 600px) {
+      body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">← Retour au dashboard</a>
+
+  <header class="header">
+    <h1>Database Check</h1>
+    <p>Surveillez et testez la connexion à votre base de données.</p>
+  </header>
+
+  <section class="card">
+    <h2>PostgreSQL</h2>
+    <p class="muted">
+      Cette vérification utilise les identifiants autorisés récupérés depuis
+      HashiCorp Vault. Aucun mot de passe n'est affiché dans l'interface.
+    </p>
+    <span class="status">Test de connexion disponible</span>
+    <p style="margin-top: 24px">
+      <button onclick="checkDatabase()">Tester la connexion</button>
+    </p>
+    <div id="result" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Flux de connexion</h2>
+    <p class="muted">01 — Flask s'authentifie auprès de Vault via AppRole.</p>
+    <p class="muted">02 — Vault renvoie le secret autorisé.</p>
+    <p class="muted">03 — Flask teste la connexion PostgreSQL.</p>
+  </section>
+
+  <script>
+    async function checkDatabase() {
+      const result = document.getElementById("result");
+      result.textContent = "Vérification en cours…";
+
+      try {
+        const response = await fetch("/db-check");
+        const data = await response.json();
+
+        result.textContent = (response.ok ? "✓ " : "✗ ") +
+          data.message + "\nStatut : " + data.status;
+      } catch (error) {
+        result.textContent = "Impossible de joindre le service.";
+      }
+    }
+  </script>
+</body>
+</html>
