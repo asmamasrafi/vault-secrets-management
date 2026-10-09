@@ -40,12 +40,12 @@ flowchart TD
 
 ### Dashboard
 
-![Vault Secrets Management Dashboard](screenshots/dashboard.jpg)
+![Vault Secrets Management Dashboard](screenshots/dashboard.png)
 
 
 ### Docker Environment
 
-![Docker Compose Running Containers](screenshots/containers.jpg)
+![Docker Compose Running Containers](screenshots/containers.png)
 
 ### 🔄 How It Works
 
