@@ -36,6 +36,16 @@ flowchart TD
     style DB fill:#4169E1,color:#fff,stroke:#4169E1
     style APP fill:#222,color:#fff,stroke:#555
 ```
+## 📸 Project Screenshots
+
+### Dashboard
+
+![Vault Secrets Management Dashboard](screenshots/dashboard.jpg)
+
+
+### Docker Environment
+
+![Docker Compose Running Containers](screenshots/containers.jpg)
 
 ### 🔄 How It Works
 
