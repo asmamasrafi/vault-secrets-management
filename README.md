@@ -15,11 +15,13 @@
 
 This project explores how **HashiCorp Vault can centralize secrets management** in a containerized application environment.
 
-It demonstrates how a Flask application can authenticate with Vault using the **AppRole authentication method**, retrieve database credentials from a KV secrets engine, and connect to PostgreSQL without hardcoding database credentials directly into the application code.
+It demonstrates how a Flask application can authenticate with Vault using the **AppRole authentication method**, retrieve database credentials from a KV v2 secrets engine, and connect to PostgreSQL without hardcoding database credentials in the application code.
 
 The project also includes a web dashboard for exploring the environment, checking database connectivity, viewing secret-management information, and accessing container log instructions.
 
 > 🎯 **Objective:** Understand how secrets management, application authentication, and database access can be integrated into a practical cybersecurity lab.
+
+> ⚠️ **Scope:** This is a learning lab, not a production deployment. See [Security Considerations](#️-security-considerations).
 
 ## 🏗️ Architecture
 
@@ -36,55 +38,56 @@ flowchart TD
     style DB fill:#4169E1,color:#fff,stroke:#4169E1
     style APP fill:#222,color:#fff,stroke:#555
 ```
+
 ## 📸 Project Screenshots
 
 ### Dashboard
 
 ![Vault Secrets Management Dashboard](screenshots/Vault_dashboard.jpg)
 
-
 ### Docker Environment
 
 ![Docker Compose Running Containers](screenshots/container.jpg)
 
-### 🔄 How It Works
+## 🔄 How It Works
 
-1. **Containerized environment:** Docker Compose orchestrates Vault, Flask, and PostgreSQL.
-2. **Application authentication:** Flask authenticates to Vault through AppRole using configured credentials.
-3. **Secrets retrieval:** The application reads database credentials from a KV v2 secrets path.
-4. **Database connection:** Flask uses the retrieved credentials to connect to PostgreSQL.
-5. **Web dashboard:** Users can explore the application, check database connectivity, and navigate the available sections.
+1. **Containerized environment:** Docker Compose runs Vault, Flask, and PostgreSQL.
+2. **Provisioning:** the secret, the policy, and the AppRole are created in Vault with CLI commands (see [Vault Provisioning](#-vault-provisioning)).
+3. **Application authentication:** Flask authenticates to Vault through AppRole using the `role_id` and `secret_id` supplied in `.env`.
+4. **Secrets retrieval:** the application reads database credentials from the KV v2 path `secret/vaultapp/db`.
+5. **Database connection:** Flask uses the retrieved credentials to connect to PostgreSQL.
+6. **Web dashboard:** users can check database connectivity and navigate the available sections.
 
 ## 🛡️ Security Concepts Demonstrated
 
-| Concept                             | Implementation                                 |
-| ----------------------------------- | ---------------------------------------------- |
-| Centralized secrets management      | HashiCorp Vault                                |
-| Application authentication          | AppRole                                        |
-| Secrets storage                     | KV v2 secrets engine                           |
-| Database credential management      | Vault-managed credentials stored as KV secrets |
-| Container isolation                 | Docker Compose                                 |
-| Access control                      | Vault policies                                 |
-| Application-to-database integration | Flask and PostgreSQL                           |
+| Concept                             | Implementation                                            |
+| ----------------------------------- | --------------------------------------------------------- |
+| Centralized secrets management      | HashiCorp Vault                                           |
+| Application authentication          | AppRole (token TTL 1h, max TTL 4h)                        |
+| Secrets storage                     | KV v2 secrets engine                                      |
+| Database credential management      | Credentials stored as static KV secrets                   |
+| Least-privilege access              | Vault policy granting `read` on a single secret path      |
+| Reproducible environment            | Docker Compose (Vault, PostgreSQL, Flask)                 |
+| Application-to-database integration | Flask and PostgreSQL                                      |
 
-**Important distinction:** This lab stores database credentials in a KV secrets engine. It does not currently demonstrate Vault's dynamic database secrets engine or automatic credential rotation.
+**Important distinction:** this lab stores database credentials in a KV secrets engine. It does not demonstrate Vault's dynamic database secrets engine or automatic credential rotation.
 
 ## ✨ Features
 
-* 🖥️ **Web Dashboard** — A simple interface for navigating the lab.
-* 🔐 **Secrets Management** — Integration with Vault for retrieving database credentials.
-* 🗄️ **Database Connectivity** — PostgreSQL connection checks.
-* 📦 **Containerized Services** — A reproducible local environment using Docker Compose.
-* 📋 **Vault Policy** — A policy file defining the application's permitted Vault access.
-* 📝 **Logs Guidance** — Instructions for inspecting container logs during troubleshooting.
+* 🖥️ **Web Dashboard** — a simple interface for navigating the lab.
+* 🔐 **Secrets Management** — integration with Vault to retrieve database credentials.
+* 🗄️ **Database Connectivity** — PostgreSQL connection check.
+* 📦 **Containerized Services** — a reproducible local environment using Docker Compose.
+* 📋 **Vault Policy** — a policy file (`vault/app-policy.hcl`) defining the application's permitted access.
+* 📝 **Logs Guidance** — instructions for inspecting container logs.
 
 ## 🧰 Technology Stack
 
-* **Secrets management:** HashiCorp Vault
+* **Secrets management:** HashiCorp Vault (dev mode)
 * **Authentication:** Vault AppRole
 * **Secrets engine:** KV v2
 * **Backend:** Python, Flask
-* **Database:** PostgreSQL
+* **Database:** PostgreSQL 16
 * **Containerization:** Docker, Docker Compose
 * **Frontend:** HTML, CSS
 * **Version control:** Git, GitHub
@@ -102,6 +105,7 @@ vault-secrets-management/
 │   ├── app.py
 │   ├── Dockerfile
 │   └── requirements.txt
+├── screenshots/
 ├── vault/
 │   └── app-policy.hcl
 ├── .env.example
@@ -114,123 +118,158 @@ vault-secrets-management/
 
 ### Prerequisites
 
-Install the following tools before running the lab:
-
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * [Git](https://git-scm.com/)
-* A GitHub account to clone the repository
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/asmamasrafi/vault-secrets-management.git
 cd vault-secrets-management
 ```
 
-### 2. Configure Environment Variables
-
-Create your local environment file from the example:
+### 2. Create your local environment file
 
 ```bash
 cp .env.example .env
 ```
 
-On Windows PowerShell, you can use:
+On Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Review `.env.example` and configure the required values in `.env` according to the project's configuration.
+The `role_id` and `secret_id` values are filled in at step 4. **Never commit `.env`.**
 
-**Never commit your `.env` file or publish real credentials.**
-
-### 3. Start the Environment
-
-Build the Flask image and start the services:
+### 3. Start Vault and PostgreSQL
 
 ```bash
-docker compose up --build -d
-```
-
-Check the running containers:
-
-```bash
+docker compose up -d vault postgres
 docker compose ps
 ```
 
-### 4. Access the Services
+### 4. Provision Vault
 
-When the containers are running and the ports are configured as expected, open:
+Follow [Vault Provisioning](#-vault-provisioning), then put the generated `role_id` and `secret_id` in your local `.env`.
 
-| Service         | Local URL             |
-| --------------- | --------------------- |
-| Flask Dashboard | http://localhost:5000 |
-| Vault UI / API  | http://localhost:8200 |
+### 5. Start the Flask application
 
-The Vault development environment is intended for local learning and testing only.
+```bash
+docker compose up -d --build app
+docker compose ps
+```
 
-### 5. Explore the Dashboard
+### 6. Access the services
 
-Use the dashboard to explore the available sections:
+| Service         | Local URL               |
+| --------------- | ----------------------- |
+| Flask Dashboard | <http://localhost:5000> |
+| Vault UI / API  | <http://localhost:8200> |
 
-* **Home:** Overview of the project.
-* **Database:** Check database connectivity.
-* **Secrets:** Explore the application's Vault integration.
-* **Logs:** Find commands for inspecting container logs.
+### 7. Explore the dashboard
 
-### 6. Inspect Container Logs
+* **Home:** overview of the project.
+* **Database:** check database connectivity.
+* **Secrets:** explore the application's Vault integration.
+* **Logs:** commands for inspecting container logs.
 
-To inspect all service logs:
+## 🔧 Vault Provisioning
+
+Vault runs in **dev mode with in-memory storage**: everything below is lost when the Vault container restarts and must be repeated.
+
+In dev mode Vault serves plain HTTP, so every CLI command run inside the container needs `VAULT_ADDR=http://127.0.0.1:8200`, otherwise it fails with an HTTPS error. The commands below use the dev root token (`root`), for this lab only.
+
+The examples use PowerShell syntax.
+
+**1. Store the database secret** (demo values; the password must match `POSTGRES_PASSWORD` in `docker-compose.yml`)
+
+```powershell
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault kv put secret/vaultapp/db username="vaultapp" password="demo_password" database="vaultapp"
+```
+
+**2. Load the least-privilege policy**
+
+```powershell
+Get-Content .\vault\app-policy.hcl -Raw | docker exec -i -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault policy write flask-policy -
+```
+
+On Linux/macOS: `docker exec -i -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault policy write flask-policy - < vault/app-policy.hcl`
+
+The policy grants only `read` on `secret/data/vaultapp/db`:
+
+```hcl
+path "secret/data/vaultapp/db" {
+  capabilities = ["read"]
+}
+```
+
+Check it:
+
+```powershell
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault policy read flask-policy
+```
+
+**3. Enable AppRole and create the application role**
+
+```powershell
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault auth enable approle
+
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault write auth/approle/role/flask-app token_policies="flask-policy" token_ttl="1h" token_max_ttl="4h"
+```
+
+**4. Generate the credentials for the application**
+
+```powershell
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault read auth/approle/role/flask-app/role-id
+
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault-server vault write -f auth/approle/role/flask-app/secret-id
+```
+
+Copy the two values into your local `.env`, using the variable names defined in `.env.example`. Never commit them or show them in screenshots.
+
+## 📝 Inspecting Logs
 
 ```bash
 docker compose logs
-```
-
-To follow logs in real time:
-
-```bash
-docker compose logs -f
-```
-
-To inspect an individual service, use the corresponding service name from `docker-compose.yml`:
-
-```bash
+docker compose logs -f app
 docker compose logs -f vault
 ```
 
 Press `Ctrl+C` to stop following the logs.
 
-### 7. Stop the Environment
+## 🛑 Stopping the Environment
 
 ```bash
 docker compose down
 ```
 
-Review the Compose configuration before removing volumes or persistent data.
+This keeps the PostgreSQL volume. Review the Compose configuration before removing volumes.
 
 ## ⚠️ Security Considerations
 
 This project is a **learning lab, not a production-ready deployment**.
 
-* Vault development mode is not suitable for production.
-* The development root token must never be reused in a real environment.
-* Keep credentials in local environment configuration rather than hardcoding them in source files.
-* Never commit `.env`, real tokens, passwords, or other sensitive material.
-* Use least-privilege Vault policies for application access.
-* Production deployments require appropriate Vault initialization, unsealing, durable storage, TLS, access controls, audit logging, and secure credential lifecycle management.
+* All credentials in this repository are **demo values** (for example the PostgreSQL password in `docker-compose.yml` and the Vault dev root token `root`). Never reuse them in a real environment.
+* The application does not hardcode database credentials: it retrieves them from Vault at runtime. The PostgreSQL container, however, is initialized with a demo password defined in `docker-compose.yml`.
+* Vault runs in **dev mode with in-memory storage**: the secret, policy, and AppRole are lost whenever the Vault container restarts.
+* The Vault (`8200`) and PostgreSQL (`5432`) ports are published on the host. Run this lab only on a trusted machine.
+* AppRole credentials in `.env` are themselves secrets (the "secret zero" problem): Vault removes database passwords from the code but does not remove the need to protect this bootstrap credential.
+* The `secret_id` generated in this lab has no expiration and unlimited uses. Production setups should use short-lived, limited-use SecretIDs delivered through a secure mechanism.
 * Database credentials stored in KV v2 are static secrets unless additional mechanisms are implemented.
+* Never commit `.env`, real tokens, or passwords.
+* Production deployments require proper Vault initialization and unsealing, durable storage, TLS, access controls, audit logging, and secure credential lifecycle management.
 
 ## 🔭 Future Improvements
 
-Potential extensions for this lab include:
-
+* [ ] Add a negative test showing that the application token cannot read other Vault paths.
+* [ ] Script the Vault provisioning steps.
 * [ ] Enable Vault audit logging and investigate authentication events.
 * [ ] Introduce dynamic PostgreSQL credentials through Vault's database secrets engine.
-* [ ] Explore short-lived credentials and automated rotation.
-* [ ] Improve the dashboard's monitoring and error reporting.
+* [ ] Use short-lived, limited-use SecretIDs and automated rotation.
+* [ ] Bind published ports to `127.0.0.1` and avoid publishing PostgreSQL.
 * [ ] Add automated integration tests.
-* [ ] Replace development-mode Vault with a properly secured deployment configuration.
+* [ ] Replace dev-mode Vault with a secured deployment configuration.
 * [ ] Integrate monitoring and security alerting.
 
 ## 📚 Learning Outcomes
@@ -238,11 +277,12 @@ Potential extensions for this lab include:
 Through this project, I explored:
 
 * How applications authenticate to HashiCorp Vault.
-* How AppRole can support machine-to-machine authentication.
+* How AppRole supports machine-to-machine authentication.
 * How KV v2 stores and retrieves application secrets.
+* How a Vault policy enforces least privilege.
 * How a backend application can retrieve credentials at runtime.
 * How Docker Compose brings multiple services together.
-* Why centralized secrets management is an important part of application security.
+* Why the bootstrap credential ("secret zero") remains a key challenge in secrets management.
 
 ## 👩‍💻 Author
 
